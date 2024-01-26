@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "../include/cprocessing.h"
+#include "../include/cglm.h"
 
 #include <GL/glew.h>
 
@@ -14,8 +15,15 @@ int loop_callback(struct CprocWindow *window){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     fillStyle(1.0f, 0.f, 0.f);
-    //fillTriangle(sinf(time/100.f) * WIDTH / 2, sinf(time/100.f) * HEIGHT / 2, sinf(time/100.f) * 200.f, sinf(time/100.f) * 200.f);
-    fillRect(sinf(time/50.f) * WIDTH / 2, 0.f, sinf(time/100.f) * 200.f, sinf(time/100.f) * 200.f);
+    {   /* TRIANGLE */
+        fillTriangle(-WIDTH / 2.f + 200 , sinf(time/50.f) * HEIGHT / 2.f, 200.f, 200.f);
+    }
+    {   /* RECTANGLE */
+        fillRect(WIDTH / 2.f - 200, sinf(time/50.f) * HEIGHT / 2.f, 200.f, 200.f);
+    }
+    {   /* ELLIPSE */
+        fillEllipse(0.f, 0.f, 100.f, sinf(time/100.f) * 200.f);
+    }
     time++;
     return 0;
 }
