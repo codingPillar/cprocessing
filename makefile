@@ -22,10 +22,15 @@ $(OUT_DIR)/%.o:$(SRC_DIR)/%
 $(OUT_DIR)/%.o:$(EXAMPLE_DIR)/%
 	$(COMPILE) -c
 
+# BUILD LIBRARY
+LIBNAME:=cprocessing
+$(LIBNAME):$(C_SRC_OBJ)
+	ar -crs lib$(LIBNAME).a $^
+
 # BUILD EXECUTABLE
 OUTNAME:=simpleWindow
 $(OUTNAME):$(C_SRC_OBJ) $(OUT_DIR)/$(OUTNAME).c.o
-	$(COMPILE) $(CLIBS)
+	$(COMPILE) $(CLIBS) -L. -l$(LIBNAME)
 
 # TESTS
 TEST_DIR:=tests
@@ -40,4 +45,4 @@ $(TEST_OUTNAME):$(TEST_SRC_OBJ) $(C_SRC_OBJ)
 
 clean:
 	rm -rf $(OUT_DIR)/*
-	rm -f $(OUTNAME) $(TEST_OUTNAME)
+	rm -f $(OUTNAME) $(TEST_OUTNAME) lib$(LIBNAME).a

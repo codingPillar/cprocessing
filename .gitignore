@@ -1,3 +1,4 @@
 compile/*
 test
 simpleWindow
+libcprocessing.a
