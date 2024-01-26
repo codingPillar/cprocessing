@@ -9,6 +9,8 @@
 
 #define INIT_WINDOW_ERROR -1
 
+#define TWO_PI (2.f * 3.1415f)
+
 struct CprocWindow{
     SDL_Window *window;
     SDL_GLContext context;
@@ -25,5 +27,6 @@ void cproc_loop(struct CprocWindow *window, LoopCallback callback);
 void fillStyle(GLfloat red, GLfloat green, GLfloat blue);
 void fillTriangle(int x, int y, int base, int height);
 void fillRect(int x, int y, int width, int height);
+void fillEllipse(int x, int y, float a, float b);
 
 #endif //C_PROCESSING_H

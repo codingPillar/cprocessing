@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdbool.h>
 
 #include "../include/cprocessing.h"
@@ -8,6 +9,8 @@
 #define GLSL_MVP_UNIFORM_NAME "mv"
 
 #define MAX_VBO_COUNT 4
+
+#define ELLIPSE_PRECISION 40
 
 struct Shape{
     GLuint vao;
@@ -115,6 +118,19 @@ static void init_cprocessing(){
     /* SETUP VAO FOR RECTANGLE */
     glGenVertexArrays(1, &drawingContext.rectangle.vao);
     enable_vertex_array(&drawingContext.rectangle, positionLocation, rectangleVerteces, sizeof(rectangleVerteces));
+
+    /* SETUP VAO FOR ELLIPSE */
+    glGenVertexArrays(1, &drawingContext.ellipse.vao);
+    GLfloat verteces[3 * (ELLIPSE_PRECISION + 1)];
+    verteces[0] = 0.f; verteces[1] = 0.f; verteces[2] = 0.f;
+    for(unsigned int i = 0; i < ELLIPSE_PRECISION; i++){
+        const unsigned int index = 3 * (i + 1);
+        const float current = (float)i * TWO_PI / (ELLIPSE_PRECISION - 1);
+        verteces[index] = cosf(current);
+        verteces[index + 1] = sinf(current);
+        verteces[index + 2] = 0.f;
+    }
+    enable_vertex_array(&drawingContext.ellipse, positionLocation, verteces, sizeof(verteces));
 }
 
 int cproc_init_window(struct CprocWindow *window, unsigned int width, unsigned int height){
@@ -177,7 +193,7 @@ void fillStyle(GLfloat red, GLfloat green, GLfloat blue){
     drawingContext.b = blue;
 }
 
-static void drawHelper(GLuint program, struct Shape shape, struct Vec3f translation, struct Vec3f scale, GLuint vertexCount){
+static void drawHelper(GLuint program, struct Shape shape, struct Vec3f translation, struct Vec3f scale, GLuint vertexCount, GLenum mode){
     glUseProgram(program);
     glBindVertexArray(shape.vao);
     glVertexAttrib3f(glGetAttribLocation(program, GLSL_COLOR_ATTRIB_NAME), 
@@ -187,17 +203,23 @@ static void drawHelper(GLuint program, struct Shape shape, struct Vec3f translat
     mv = cglm_multiply4(mv, cglm_translate4(translation.x, translation.y, translation.z));
     mv = cglm_multiply4(mv, cglm_scale4(scale.x, scale.y, scale.z));
     glUniformMatrix4fv(mvLocation, 1, GL_TRUE, mv.matrix);
-    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+    glDrawArrays(mode, 0, vertexCount);
 }
 
 void fillTriangle(int x, int y, int base, int height){
     struct Vec3f translation = {.x = 2 * x/(float)drawingContext.width, .y = 2 * y/(float)drawingContext.height, .z = 0.f};
     struct Vec3f scale = {.x = 2 * base/(float)drawingContext.width, .y = 2 * height/(float)drawingContext.height, .z = 1.f};
-    drawHelper(drawingContext.basicProgramID, drawingContext.triangle, translation, scale, 3);
+    drawHelper(drawingContext.basicProgramID, drawingContext.triangle, translation, scale, 3, GL_TRIANGLES);
 }
 
 void fillRect(int x, int y, int width, int height){
     struct Vec3f translation = {.x = 2 * x/(float)drawingContext.width, .y = 2 * y/(float)drawingContext.height, .z = 0.f};
     struct Vec3f scale = {.x = 2 * width / (float)drawingContext.width, .y = 2 * height / (float)drawingContext.height, .z = 1.f};
-    drawHelper(drawingContext.basicProgramID, drawingContext.rectangle, translation, scale, 6);
+    drawHelper(drawingContext.basicProgramID, drawingContext.rectangle, translation, scale, 6, GL_TRIANGLES);
+}
+
+void fillEllipse(int x, int y, float a, float b){
+    struct Vec3f translation = {.x = 2 * x/(float)drawingContext.width, .y = 2 * y/(float)drawingContext.height, .z = 0.f};
+    struct Vec3f scale = {.x = 2 * a / (float)drawingContext.width, .y = 2 * b / (float)drawingContext.height, .z = 1.f};
+    drawHelper(drawingContext.basicProgramID, drawingContext.ellipse, translation, scale, ELLIPSE_PRECISION + 1, GL_TRIANGLE_FAN);
 }
